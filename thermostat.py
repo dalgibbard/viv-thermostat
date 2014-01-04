@@ -3,8 +3,8 @@
 # Reptile thermostat with remote socket triggering
 #
 
-TSET  = 28
-TMARG = 1
+TSET  = 28.5
+TMARG = 0.25
 STATE = None
 TEMP_SCALE = "C"
 
@@ -148,9 +148,19 @@ try:
        
         time.sleep(5)
 except KeyboardInterrupt:
+    msg = "   ** INACTIVE **   "
+    lcd.lcd_display_string(msg1, 4)
+    lcd.lcd_display_string(msg2, 4)
+    lcd.lcd_display_string(msg1, 4)
+    lcd.lcd_display_string(msg1, 4)
     GPIO.cleanup()
     print("Quitting...")
 except Exception as err:
+    msg = "   ** INACTIVE **   "
+    lcd.lcd_display_string(msg1, 4)
+    lcd.lcd_display_string(msg2, 4)
+    lcd.lcd_display_string(msg1, 4)
+    lcd.lcd_display_string(msg1, 4)
     GPIO.cleanup()
     print("Error: " + str(err))
     sys.exit(1)
