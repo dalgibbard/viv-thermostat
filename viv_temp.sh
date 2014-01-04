@@ -3,6 +3,13 @@
 # Check_MK Plugin to Monitor and Grpah Vivarium Temperatures.
 # Darren Gibbard - 4th Jan 2014
 #
+# Place this onto any box, configure SSH keys to the Pi with the temp
+# sensor, and tweak the temp probe device path below.
+#
+# This check should be placed into /usr/lib/check_mk_agent/local/ and made 
+# executable - following which, running "cmk -I <host>; cmk -O" will
+# refersh the check for the host.
+
 if [ ! `id -un` = "root" ]; then
 	echo Must run as root.
 	exit 1 
