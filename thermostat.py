@@ -15,12 +15,14 @@ switchscript = "~fishfeedtime/fishfeedtime/switch"
 remotehost = "192.168.0.50"
 remoteuser = "dalgibbard"
 
-import os, time, sys, glob
+import os, time, sys, glob, lcddriver
 from datetime import datetime as t
 import RPi.GPIO as GPIO
 
 if os.geteuid() != 0:
         os.execvp("sudo", ["sudo"] + sys.argv)
+
+lcd = lcddriver.lcd()
 
 #Setting GPIO controling LED - ON when heating is running, OFF when it's not running
 GPIO.setmode(GPIO.BCM) ## Use board pin numbering
@@ -92,6 +94,13 @@ try:
         os.system('clear')
 
         #Display parameters
+	msg = "Time: " + str(HOUR) + ":" + str(MINUTE)
+        lcd.lcd_display_string(msg, 1)
+        msg = "Temp Min: " + str(TSET - TMARG) + str(TEMP_SCALE)
+        lcd.lcd_display_string(msg, 2)
+        msg = "Temp Max: " + str(TSET) + str(TEMP_SCALE)
+        lcd.lcd_display_string(msg, 3)
+
         print color.HEADER + ( "Settings:\n" + "Time : " + str(HOUR) + ":" + str(MINUTE) + "\n" + "Temperature min: " + str(TSET - TMARG) + str(TEMP_SCALE) + "\n" + "Temperature max: " + str(TSET) + str(TEMP_SCALE) + "\n") + color.ENDC
        
    
@@ -100,7 +109,9 @@ try:
         try:
             int(tmp)
         except:
-            print color.FAIL + ("Temperature value is not a number") + color.ENDC
+            msg = "Temperature value is not a number"
+            lcd.lcd_display_string(msg, 4)
+            print color.FAIL + (msg) + color.ENDC
             heating_status("False")
    
    
@@ -109,21 +120,31 @@ try:
         if tmp >= TSET and (STATE==None or STATE==True):
             STATE = False
             sockets("off", YELLOW)
-            print color.OKGREEN + ("Temperature " + str(tmp) + " " + str(TEMP_SCALE) + " :Reached MAX, switching OFF heating") + color.ENDC
+            msg = "TEMP " + str(tmp) + str(TEMP_SCALE) + "- SW OFF"
+            lcd.lcd_display_string(msg, 4)
+            print color.OKGREEN + msg + color.ENDC
         #tmp >= tset just being off
         elif tmp >= TSET and (STATE==False):
-            print color.OKGREEN + ("Temperature " + str(tmp) + " " + str(TEMP_SCALE) + " :We don't need to run the heating") + color.ENDC
+            msg = "TEMP " + str(tmp) + str(TEMP_SCALE) + "- OFF   "
+            lcd.lcd_display_string(msg, 4)
+            print color.OKGREEN + msg + color.ENDC
         #tmp<tset status is true and heating is running
         elif tmp<TSET and (STATE==True):
-            print color.BLUE + ("It\'s " + str(tmp) + " " + str(TEMP_SCALE) + " :Heating is running now") + color.ENDC
+            msg = "TEMP " + str(tmp) + str(TEMP_SCALE) + "- ON    "
+            lcd.lcd_display_string(msg, 4)
+            print color.BLUE + msg + color.ENDC
         #tmp<tset-tmarg switching on
         elif tmp < TSET - TMARG and (STATE==None or not STATE or STATE==False):
             STATE = True
             sockets("on", YELLOW)
-            print color.BLUE + ("It\'s " + str(tmp) + " " + str(TEMP_SCALE) + " :Switching ON heating") + color.ENDC
+            msg = "TEMP " + str(tmp) + str(TEMP_SCALE) + "- SW ON "
+            lcd.lcd_display_string(msg, 4)
+            print color.BLUE + msg + color.ENDC
         #tset-tmarg<=tmp
         elif tmp >=TSET-TMARG and STATE==False:
-            print color.WARNING + ("Temperature " + str(tmp) + " " + str(TEMP_SCALE) + " :Within set range, no change required") + color.ENDC
+            msg = "TEMP " + str(tmp) + str(TEMP_SCALE) + "- OFF   "
+            lcd.lcd_display_string(msg, 4)
+            print color.WARNING + msg + color.ENDC
        
         time.sleep(5)
 except KeyboardInterrupt:
