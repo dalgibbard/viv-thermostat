@@ -107,9 +107,9 @@ try:
    
         #Reading curent temperature and making sure it's a number
         tmpinit = read_temp()
-	tmp = format(tmp, '.3f').zfill(6)
+	tmp = format(tmpinit, '.3f').zfill(6)
         try:
-            int(tmp)
+            float(tmp)
         except:
             msg = "Temperature value is not a number"
             lcd.lcd_display_string(msg, 4)
