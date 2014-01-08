@@ -3,7 +3,7 @@
 # Reptile thermostat with remote socket triggering
 #
 
-TSET  = 28.5
+TSET  = 25.5
 TMARG = 0.25
 STATE = None
 TEMP_SCALE = "C"
@@ -87,6 +87,7 @@ class color:
 GPIO.output(GREEN, True)
 
 try:
+    count = 0
     while True:
         HOUR = t.now().hour
         MINUTE = t.now().minute
@@ -94,7 +95,7 @@ try:
         os.system('clear')
 
         #Display parameters
-	msg = "Time: " + str(HOUR) + ":" + str(MINUTE)
+	msg = "Time: " + str(HOUR).zfill(2) + ":" + str(MINUTE).zfill(2) + "   "
         lcd.lcd_display_string(msg, 1)
         msg = "Temp Min: " + str(TSET - TMARG) + str(TEMP_SCALE)
         lcd.lcd_display_string(msg, 2)
@@ -105,7 +106,8 @@ try:
        
    
         #Reading curent temperature and making sure it's a number
-        tmp = read_temp()
+        tmpinit = read_temp()
+	tmp = format(tmp, '.3f').zfill(6)
         try:
             int(tmp)
         except:
@@ -125,11 +127,17 @@ try:
             print color.OKGREEN + msg + color.ENDC
         #tmp >= tset just being off
         elif tmp >= TSET and (STATE==False):
+            if count > 3:
+                sockets("off", YELLOW)
+                count = 0
             msg = "TEMP " + str(tmp) + str(TEMP_SCALE) + "- OFF   "
             lcd.lcd_display_string(msg, 4)
             print color.OKGREEN + msg + color.ENDC
         #tmp<tset status is true and heating is running
         elif tmp<TSET and (STATE==True):
+            if count > 3:
+                sockets("on", YELLOW)
+                count = 0
             msg = "TEMP " + str(tmp) + str(TEMP_SCALE) + "- ON    "
             lcd.lcd_display_string(msg, 4)
             print color.BLUE + msg + color.ENDC
@@ -145,7 +153,8 @@ try:
             msg = "TEMP " + str(tmp) + str(TEMP_SCALE) + "- OFF   "
             lcd.lcd_display_string(msg, 4)
             print color.WARNING + msg + color.ENDC
-       
+        
+        count = count + 1
         time.sleep(5)
 except KeyboardInterrupt:
     msg = "   ** INACTIVE **   "
